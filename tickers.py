@@ -18,3 +18,6 @@ def get_chains(tk_list, tk_data, tk_exp):
         for x in tk_exp[tk]:
             tk_chain.append(tk_data[tk].option_chain(x))
     return tk_chain
+
+
+
