@@ -8,8 +8,18 @@ def delivery_report():
     else:
         print(f'Message delivered to {msg.topic} [{msg.partition}]')
 
+def publish_chain(tk_chain):
+    for chain in tk_chain:
+        for _, row in chain.calls.iterrows():
+            message = {
+
+            }   
+
 def publish_price_tick(ticker, price):
-    message = {'ticker': ticker, 'price': price}
+    message = {
+        'ticker': ticker,
+        'price': price
+    }
     p.produce(
         'price-ticks',
         key = ticker,
@@ -17,5 +27,4 @@ def publish_price_tick(ticker, price):
         callback = delivery_report
     )
     producer.flush()
-
 
