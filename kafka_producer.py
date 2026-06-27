@@ -1,12 +1,12 @@
 from confluent_kafka import Producer
 import json
-p = Producer({'bootstrap.servers': 'localhost:9092'})
+p = Producer({'bootstrap.servers': '127.0.0.1:9092'})
 
-def delivery_report():
+def delivery_report(err, msg):
     if err is not None:
         print(f'Message Delivery failed: {err}')
     else:
-        print(f'Message delivered to {msg.topic} [{msg.partition}]')
+        print(f'Message delivered to {msg.topic()} [{msg.partition()}]')
 
 def publish_chain(tk_chain):
     for chain in tk_chain:
