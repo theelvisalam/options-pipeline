@@ -1,4 +1,5 @@
-from confluent_kafka import Consumer
+from confluent_kafka import Consumer, KafkaExeption
+import sys
 
 c = Consumer({
     'boostrap.servers': '127.0.0.1',
@@ -6,8 +7,16 @@ c = Consumer({
     'auto.offset.reset': 'earliest'
 })
 
-c.subscribe(['price-ticks'])
+c.subscribe(['price-ticks', 'publish-chain'])
 
-while True:
-    msg = c.poll(1.0)
-
+try:
+    while True:
+        msg = c.poll(1.0)
+        if msg is None:
+            continue
+        if msg.error():
+            raise KafkaException(msg.error())
+except KeyboardInterrupt:
+    sys.stderr.write('%% Aborted by user\n')
+finally:
+    c.close()
