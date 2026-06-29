@@ -8,8 +8,8 @@ def delivery_report(err, msg):
     else:
         print(f'Message delivered to {msg.topic()} [{msg.partition()}]')
 
-def publish_chain(tk_chain):
-    for chain in tk_chain:
+def publish_chain(tk_list, tk_chain):
+    for ticker, chain in zip(tk_list, tk_chain):
         for _, row in chain.calls.iterrows():
             '''
             ROWS IN chain.calls
@@ -30,6 +30,7 @@ def publish_chain(tk_chain):
             '''
             message = {
                 'type': 'call',
+                'ticker' = ticker
                 'expiration': str(row.name),
                 'strike': row['strike'],
                 'bid': row['bid'],
