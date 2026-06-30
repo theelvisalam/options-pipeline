@@ -10,6 +10,6 @@ tk_data = get_tickers(tk_list)
 tk_exp = get_expirations(tk_data)
 tk_chain = get_chains(tk_list, tk_data, tk_exp)
 
-publish_chain(,tk_list, tk_chain)
+publish_chain(tk_list, tk_chain)
 
 asyncio.run(start_stream(tk_list)) 

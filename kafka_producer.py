@@ -30,8 +30,8 @@ def publish_chain(tk_list, tk_chain):
             '''
             message = {
                 'type': 'call',
-                'ticker' = ticker
-                'expiration': str(row.name),
+                'ticker': ticker,
+                'expiration': row.name,
                 'strike': row['strike'],
                 'bid': row['bid'],
                 'ask': row['ask'],
