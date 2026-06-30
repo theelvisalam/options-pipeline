@@ -1,3 +1,4 @@
+from pricing import black_scholes
 from confluent_kafka import Consumer, KafkaException
 import logging
 import sys
@@ -51,6 +52,7 @@ try:
             V = data['impliedVolatility']
         # Risk Free Rate
         r = 0.05
+        black_scholes(S, K, T, V, r)
 except KeyboardInterrupt:
     sys.stderr.write('%% Aborted by user\n')
 finally:
