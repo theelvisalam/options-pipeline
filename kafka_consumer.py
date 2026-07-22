@@ -6,8 +6,8 @@ import sys
 import json
 
 conf = {
-    'bootstrap.servers': '127.0.0.1:9092',
-    'group.id': 'options-pipeline-group',
+    'bootstrap.servers': 'kafka:9092',
+    'group.id': 'pricing-engine',
     'auto.offset.reset': 'earliest'
 }
 

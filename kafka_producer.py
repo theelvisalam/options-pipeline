@@ -1,6 +1,6 @@
 from confluent_kafka import Producer
 import json
-p = Producer({'bootstrap.servers': '127.0.0.1:9092'})
+p = Producer({'bootstrap.servers': 'kafka:9092'})
 
 def delivery_report(err, msg):
     if err is not None:
