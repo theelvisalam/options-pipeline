@@ -8,6 +8,21 @@ def delivery_report(err, msg):
     else:
         print(f'Message delivered to {msg.topic()} [{msg.partition()}]')
 
+def publish_greeks(ticker, strike, expiration, greeks):
+    message = {
+        'ticker': ticker,
+        'strike': strike,
+        'expiration': expiration,
+        **greeks
+    }
+    p.produce(
+        'computed-greeks',
+        key=f'{ticker}-{strike}-{expiration}',
+        value=json.dumps(message),
+        callback=delivery_report
+    )
+    p.flush()
+
 def publish_chain(tk_list, tk_chain):
     for ticker, chain in zip(tk_list, tk_chain):
         for _, row in chain.calls.iterrows():
@@ -45,7 +60,7 @@ def publish_chain(tk_list, tk_chain):
                 callback = delivery_report
 
             )
-            p.flush()
+        p.flush()
 
 def publish_price_tick(ticker, price):
     message = {

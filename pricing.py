@@ -2,7 +2,7 @@ from math import log, sqrt, exp
 from scipy.stats import norm
 
 def black_scholes(S, K, T, V, r):
-    rawD1 = (log(S / K) + (r + (V ** 2) / 2)) / (V * sqrt(T))
+    rawD1 = (log(S / K) + (r + (V ** 2) / 2) * T) / (V * sqrt(T))
     rawD2 = rawD1 - V * sqrt(T)
     d1 = norm.cdf(rawD1)
     d2 = norm.cdf(rawD2)

@@ -1,4 +1,5 @@
 from pricing import black_scholes
+from kafka_producer import publish_greeks
 from confluent_kafka import Consumer, KafkaException
 import datetime
 import logging
@@ -16,7 +17,7 @@ logger.setLevel(logging.DEBUG)
 
 c = Consumer(
     conf,
-    logger = logger
+    logger=logger
 )
 
 c.subscribe(['price-ticks', 'publish-chain'])
@@ -32,32 +33,33 @@ try:
             raise KafkaException(msg.error())
         data = json.loads(msg.value().decode('utf-8'))
         print(f'Topic: {msg.topic()} | Data: {data}')
-        #----------INPUTS-------------- 
+        # ---------- INPUTS --------------
         # Risk Free Rate
         r = 0.05
         if msg.topic() == 'price-ticks':
             # Ticker
             tk = data['ticker']
             # Underlying Price
-            S = data['price']
-            latest_prices[tk] = S
+            latest_prices[tk] = data['price']
         elif msg.topic() == 'publish-chain':
             current_price = latest_prices.get(data['ticker'])
             if current_price is None:
                 continue
             dateNow = datetime.date.today()
             exp = datetime.datetime.strptime(data['expiration'], '%Y-%m-%d').date()
-            timedelta = dateNow - exp
+            timedelta = exp - dateNow
+            # Time To Expiration in Years
+            T = timedelta.days / 365
+            if T <= 0:
+                continue
             # Underlying Price
             S = current_price
             # Strike Price
             K = data['strike']
-            # Time To Expiration in Years
-            T = timedelta.days / 365
             # Implied Volatility
             V = data['impliedVolatility']
             greeks = black_scholes(S, K, T, V, r)
-            print(greeks)
+            publish_greeks(data['ticker'], K, data['expiration'], greeks)
 except KeyboardInterrupt:
     sys.stderr.write('%% Aborted by user\n')
 finally:
