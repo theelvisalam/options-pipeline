@@ -23,43 +23,20 @@ def publish_greeks(ticker, strike, expiration, greeks):
     )
     p.flush()
 
-def publish_chain(tk_list, tk_chain):
-    for ticker, chain in zip(tk_list, tk_chain):
+def publish_chain(tk_chain):
+    for ticker, expiration, chain in tk_chain:
         for _, row in chain.calls.iterrows():
-            '''
-            ROWS IN chain.calls
-            contractSymbol
-            lastTradeDate
-            strike
-            lastPrice
-            bid
-            ask
-            change
-            percentChange
-            volume
-            openInterest
-            impliedVolatility
-            inTheMoney
-            contractSize
-            currency
-            '''
             message = {
                 'type': 'call',
                 'ticker': ticker,
-                'expiration': row.name,
+                'expiration': expiration,
                 'strike': row['strike'],
                 'bid': row['bid'],
                 'ask': row['ask'],
                 'impliedVolatility': row['impliedVolatility'],
                 'volume': row['volume']
             }
-            p.produce(
-                'publish-chain',
-                key = str(row['strike']),
-                value = json.dumps(message),
-                callback = delivery_report
-
-            )
+            p.produce('publish-chain', key=str(row['strike']), value=json.dumps(message), callback=delivery_report)
         p.flush()
 
 def publish_price_tick(ticker, price):

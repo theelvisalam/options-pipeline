@@ -12,12 +12,11 @@ def get_expirations(tk_data):
         tk_exp[tk] = data.options
     return tk_exp
 
-def get_chains(tk_list, tk_data, tk_exp): 
-    tk_chain = []    
+def get_chains(tk_list, tk_data, tk_exp):
+    tk_chain = []
     for tk in tk_list:
         for x in tk_exp[tk]:
-            tk_chain.append(tk_data[tk].option_chain(x))
+            tk_chain.append((tk, x, tk_data[tk].option_chain(x)))
     return tk_chain
-
 
 
