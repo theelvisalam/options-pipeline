@@ -12,18 +12,27 @@ services:
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    healthcheck:
+      test: ["CMD", "kafka-topics", "--bootstrap-server", "localhost:9092", "--list"]
+      interval: 5s
+      timeout: 10s
+      retries: 10
 
   producer:
     build:
       context: .
       dockerfile: Dockerfile.producer
-    depends_on: [kafka]
+    depends_on:
+      kafka:
+        condition: service_healthy
 
   consumer:
     build:
       context: .
       dockerfile: Dockerfile.consumer
-    depends_on: [kafka]
+    depends_on:
+      kafka:
+        condition: service_healthy
 
   api:
     build:
@@ -31,4 +40,6 @@ services:
       dockerfile: Dockerfile.api
     ports:
       - "8000:8000"
-    depends_on: [consumer]
+    depends_on:
+      kafka:
+        condition: service_healthy
