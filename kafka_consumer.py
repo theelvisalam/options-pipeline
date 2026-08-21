@@ -20,6 +20,19 @@ c = Consumer(conf, logger=logger)
 c.subscribe(['price-ticks', 'publish-chain'])
 
 latest_prices = {}
+latest_chains = {}
+
+def try_compute(ticker, K, expiration, current_price, V, r=0.05):
+    dateNow = datetime.date.today()
+    exp = datetime.datetime.strptime(expiration, '%Y-%m-%d').date()
+    T = (exp - dateNow).days / 365
+    if T <= 0 or V <= 0 or K <= 0 or current_price <= 0:
+        return
+    try:
+        greeks = black_scholes(current_price, K, T, V, r)
+        publish_greeks(ticker, K, expiration, greeks)
+    except (ValueError, ZeroDivisionError) as e:
+        print(f'Skipping bad input: {e}')
 
 try:
     while True:
@@ -31,25 +44,21 @@ try:
                 continue
             raise KafkaException(msg.error())
         data = json.loads(msg.value().decode('utf-8'))
-        r = 0.05
+        print(f'Received: {msg.topic()}')
         if msg.topic() == 'price-ticks':
             tk = data['ticker']
             latest_prices[tk] = data['price']
+            for K, expiration, V in latest_chains.get(tk, []):
+                try_compute(tk, K, expiration, data['price'], V)
         elif msg.topic() == 'publish-chain':
-            current_price = latest_prices.get(data['ticker'])
-            if current_price is None:
-                continue
-            dateNow = datetime.date.today()
-            exp = datetime.datetime.strptime(data['expiration'], '%Y-%m-%d').date()
-            timedelta = exp - dateNow
-            T = timedelta.days / 365
-            if T <= 0:
-                continue
-            S = current_price
+            tk = data['ticker']
             K = data['strike']
+            expiration = data['expiration']
             V = data['impliedVolatility']
-            greeks = black_scholes(S, K, T, V, r)
-            publish_greeks(data['ticker'], K, data['expiration'], greeks)
+            latest_chains.setdefault(tk, []).append((K, expiration, V))
+            current_price = latest_prices.get(tk)
+            if current_price is not None:
+                try_compute(tk, K, expiration, current_price, V)
 except KeyboardInterrupt:
     sys.stderr.write('%% Aborted by user\n')
 finally:

@@ -13,5 +13,8 @@ down:
 ps:
 	docker-compose ps -a
 
+rebuild:
+	docker-compose up --build $(SERVICE)
+
 logs:
 	docker-compose logs -f $(SERVICE)
